@@ -322,26 +322,73 @@ export default function App() {
       audioRef.current.addEventListener('ended', () => setIsAudioPlaying(false));
     }
 
-    const fetchData = async () => {
-      try {
-        const client = window.base44 || base44SafeClient;
-        const [reqs, tests, devs] = await Promise.all([
-          client.entities.PrayerRequest.filter({ is_public: true }, '-created_date', 6).catch(() => null),
-          client.entities.Testimony.list('-created_date', 4).catch(() => null),
-          client.entities.Devotion.list('-created_date', 1).catch(() => null)
-        ]);
+   // const fetchData = async () => {
+      //try {
+       // const client = window.base44 || base44SafeClient;
+       // const [reqs, tests, devs] = await Promise.all([
+        //  client.entities.PrayerRequest.filter({ is_public: true }, '-created_date', 6).catch(() => null),
+        //  client.entities.Testimony.list('-created_date', 4).catch(() => null),
+        //  client.entities.Devotion.list('-created_date', 1).catch(() => null)
+       // ]);
 
-        setRequests(reqs && reqs.length > 0 ? reqs : INITIAL_REQUESTS);
-        setTestimonies(tests && tests.length > 0 ? tests : INITIAL_TESTIMONIES);
-        setDevotion(devs && devs[0] ? devs[0] : MOCK_DEVOTION);
-      } catch (e) {
-        setRequests(INITIAL_REQUESTS);
-        setTestimonies(INITIAL_TESTIMONIES);
-        setDevotion(MOCK_DEVOTION);
-      } finally {
-        setLoading(false);
-      }
-    };
+       /// setRequests(reqs && reqs.length > 0 ? reqs : INITIAL_REQUESTS);
+       /// setTestimonies(tests && tests.length > 0 ? tests : INITIAL_TESTIMONIES);
+       // setDevotion(devs && devs[0] ? devs[0] : MOCK_DEVOTION);
+     // } catch (e) {
+      //  setRequests(INITIAL_REQUESTS);
+      //  setTestimonies(INITIAL_TESTIMONIES);
+      //  setDevotion(MOCK_DEVOTION);
+     // } finally {
+     //   setLoading(false);
+    //  }
+   // };
+    
+    const fetchData = async () => {
+  try {
+    // Prayer Requests
+    const prayerQuery = query(
+      collection(db, "prayerRequests"),
+      orderBy("created_date", "desc"),
+      limit(20)
+    );
+
+    const prayerSnapshot = await getDocs(prayerQuery);
+
+    const reqs = prayerSnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    // Testimonies
+    const testimonyQuery = query(
+      collection(db, "testimonies"),
+      orderBy("created_date", "desc"),
+      limit(20)
+    );
+
+    const testimonySnapshot = await getDocs(testimonyQuery);
+
+    const tests = testimonySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    setRequests(reqs.length ? reqs : INITIAL_REQUESTS);
+    setTestimonies(tests.length ? tests : INITIAL_TESTIMONIES);
+
+    // Keep using the local devotion for now
+    setDevotion(MOCK_DEVOTION);
+
+  } catch (error) {
+    console.error(error);
+
+    setRequests(INITIAL_REQUESTS);
+    setTestimonies(INITIAL_TESTIMONIES);
+    setDevotion(MOCK_DEVOTION);
+  } finally {
+    setLoading(false);
+  }
+};
 
     fetchData();
 
@@ -385,68 +432,81 @@ export default function App() {
     }
   };
 
-  const handlePostRequest = async (e) => {
-    e.preventDefault();
-    if (!newReqContent.trim()) {
-      addToast('Please write your request first.', 'warning');
-      return;
-    }
+ const handlePostRequest = async (e) => {
+  e.preventDefault();
 
-    const author = newReqAnonymous ? 'Anonymous' : (newReqName.trim() || 'Anonymous');
-    const newObj = {
-      id: `req-${Date.now()}`,
-      name: author,
-      category: newReqCategory,
-      content: newReqContent.trim(),
-      is_public: true,
-      prayer_count: 0,
-      created_date: new Date().toISOString()
-    };
+  if (!newReqContent.trim()) {
+    addToast('Please write your request first.', 'warning');
+    return;
+  }
 
-    try {
-      const client = window.base44 || base44SafeClient;
-      await client.entities.PrayerRequest.create(newObj);
-      setRequests(r => [newObj, ...r]);
-      addToast('Prayer request shared with the community.', 'success');
-      setNewReqContent('');
-      setNewReqName('');
-      setShowRequestForm(false);
-    } catch (err) {
-      setRequests(r => [newObj, ...r]);
-      addToast('Shared successfully (sandbox mode).', 'success');
-    }
+  const author = newReqAnonymous ? 'Anonymous' : (newReqName.trim() || 'Anonymous');
+
+  const newObj = {
+    name: author,
+    category: newReqCategory,
+    content: newReqContent.trim(),
+    is_public: true,
+    prayer_count: 0,
+    created_date: new Date().toISOString()
   };
 
-  const handlePostStory = async (e) => {
-    e.preventDefault();
-    if (!newStoryTitle.trim() || !newStoryContent.trim()) {
-      addToast('Please complete your testimony story details.', 'warning');
-      return;
-    }
+  try {
+    await addDoc(collection(db, "prayerRequests"), newObj);
 
-    const newObj = {
-      id: `test-${Date.now()}`,
-      author: newStoryAuthor.trim() || 'Praising Sister/Brother',
-      title: newStoryTitle.trim(),
-      content: newStoryContent.trim(),
-      praises: 1,
-      created_date: new Date().toISOString()
-    };
+    setRequests(r => [
+      { ...newObj, id: Date.now().toString() },
+      ...r
+    ]);
 
-    try {
-      const client = window.base44 || base44SafeClient;
-      await client.entities.Testimony.create(newObj);
-      setTestimonies(t => [newObj, ...t]);
-      addToast('Testimony story shared successfully.', 'success');
-      setNewStoryTitle('');
-      setNewStoryContent('');
-      setNewStoryAuthor('');
-      setShowStoryForm(false);
-    } catch (err) {
-      setTestimonies(t => [newObj, ...t]);
-      addToast('Shared successfully (sandbox mode).', 'success');
-    }
+    addToast('Prayer request shared with the community.', 'success');
+
+    setNewReqContent('');
+    setNewReqName('');
+    setShowRequestForm(false);
+
+  } catch (err) {
+    console.error("Firebase error:", err);
+    addToast('Failed to share prayer request.', 'error');
+  }
+};
+
+ const handlePostStory = async (e) => {
+  e.preventDefault();
+
+  if (!newStoryTitle.trim() || !newStoryContent.trim()) {
+    addToast('Please complete your testimony story details.', 'warning');
+    return;
+  }
+
+  const newObj = {
+    author: newStoryAuthor.trim() || 'Praising Sister/Brother',
+    title: newStoryTitle.trim(),
+    content: newStoryContent.trim(),
+    praises: 1,
+    created_date: new Date().toISOString()
   };
+
+  try {
+    await addDoc(collection(db, "testimonies"), newObj);
+
+    setTestimonies(t => [
+      { ...newObj, id: Date.now().toString() },
+      ...t
+    ]);
+
+    addToast('Testimony story shared successfully.', 'success');
+
+    setNewStoryTitle('');
+    setNewStoryContent('');
+    setNewStoryAuthor('');
+    setShowStoryForm(false);
+
+  } catch (err) {
+    console.error("Firebase error:", err);
+    addToast('Failed to share testimony.', 'error');
+  }
+};
 
   const speakText = async (text) => {
     if (!text) return;
