@@ -118,22 +118,6 @@ const INITIAL_TESTIMONIES = [
   }
 ];
 
-//const base44SafeClient = {
-  //entities: {
-    PrayerRequest: { 
-     // filter: async () => INITIAL_REQUESTS,
-     // create: async (data) => data
-  //  },
-    //Testimony: { 
-     // list: async () => INITIAL_TESTIMONIES,
-     // create: async (data) => data
-  //  },
-  //  Devotion: { 
-   //   list: async () => [MOCK_DEVOTION] 
-  //  }
-//  }
-//};
-
 function PrayerCard({ request, onPray }) {
   const [prayed, setPrayed] = useState(false);
   const [localCount, setLocalCount] = useState(request.prayer_count || 0);
@@ -232,14 +216,12 @@ export default function App() {
   const [devotion, setDevotion] = useState(MOCK_DEVOTION);
   const [loading, setLoading] = useState(true);
 
-  // Global counts & visual states
   const [globalPrayers, setGlobalPrayers] = useState(14281);
   const [onlineMembers, setOnlineMembers] = useState(24);
   const [toasts, setToasts] = useState([]);
   const [showScanModal, setShowScanModal] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Form states
   const [showRequestForm, setShowRequestForm] = useState(false);
   const [newReqName, setNewReqName] = useState('');
   const [newReqCategory, setNewReqCategory] = useState('General');
@@ -251,19 +233,16 @@ export default function App() {
   const [newStoryAuthor, setNewStoryAuthor] = useState('');
   const [newStoryContent, setNewStoryContent] = useState('');
 
-  // New LLM Feature States
   const [devotionImage, setDevotionImage] = useState(null);
   const [isPolishingReq, setIsPolishingReq] = useState(false);
   const [isPolishingStory, setIsPolishingStory] = useState(false);
 
-  // Audio Reader States
   const [voiceTopic, setVoiceTopic] = useState('');
   const [isGeneratingDev, setIsGeneratingDev] = useState(false);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [isAudioLoading, setIsAudioLoading] = useState(false);
   const [selectedVoice, setSelectedVoice] = useState('Sulafat');
 
-  // Sanctuary Peer Chat states (AI references removed)
   const [companionChat, setCompanionChat] = useState([
     {
       id: 'init',
@@ -278,7 +257,6 @@ export default function App() {
 
   const audioRef = useRef(null);
 
-  // --- PayPal SDK Loading Logic ---
   useEffect(() => {
     if (activeTab === 'donate') {
       const scriptId = 'paypal-js-sdk';
@@ -287,7 +265,6 @@ export default function App() {
       const renderPaypalButton = () => {
         if (window.paypal) {
           const container = document.getElementById(containerId);
-          // Prevent duplicate rendering during strict-mode or tab swapping
           if (container && container.childElementCount === 0) {
             window.paypal.HostedButtons({
               hostedButtonId: "96DDM8URMSCEJ",
@@ -308,7 +285,6 @@ export default function App() {
       }
     }
   }, [activeTab]);
-  // ---------------------------------
 
   const addToast = (message, type = 'success') => {
     const id = Date.now();
@@ -321,74 +297,45 @@ export default function App() {
       audioRef.current = new Audio();
       audioRef.current.addEventListener('ended', () => setIsAudioPlaying(false));
     }
-
-   // const fetchData = async () => {
-      //try {
-       // const client = window.base44 || base44SafeClient;
-       // const [reqs, tests, devs] = await Promise.all([
-        //  client.entities.PrayerRequest.filter({ is_public: true }, '-created_date', 6).catch(() => null),
-        //  client.entities.Testimony.list('-created_date', 4).catch(() => null),
-        //  client.entities.Devotion.list('-created_date', 1).catch(() => null)
-       // ]);
-
-       /// setRequests(reqs && reqs.length > 0 ? reqs : INITIAL_REQUESTS);
-       /// setTestimonies(tests && tests.length > 0 ? tests : INITIAL_TESTIMONIES);
-       // setDevotion(devs && devs[0] ? devs[0] : MOCK_DEVOTION);
-     // } catch (e) {
-      //  setRequests(INITIAL_REQUESTS);
-      //  setTestimonies(INITIAL_TESTIMONIES);
-      //  setDevotion(MOCK_DEVOTION);
-     // } finally {
-     //   setLoading(false);
-    //  }
-   // };
     
     const fetchData = async () => {
-  try {
-    // Prayer Requests
-    const prayerQuery = query(
-      collection(db, "prayerRequests"),
-      orderBy("created_date", "desc"),
-      limit(20)
-    );
+      try {
+        const prayerQuery = query(
+          collection(db, "prayerRequests"),
+          orderBy("created_date", "desc"),
+          limit(20)
+        );
 
-    const prayerSnapshot = await getDocs(prayerQuery);
+        const prayerSnapshot = await getDocs(prayerQuery);
+        const reqs = prayerSnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
 
-    const reqs = prayerSnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
+        const testimonyQuery = query(
+          collection(db, "testimonies"),
+          orderBy("created_date", "desc"),
+          limit(20)
+        );
 
-    // Testimonies
-    const testimonyQuery = query(
-      collection(db, "testimonies"),
-      orderBy("created_date", "desc"),
-      limit(20)
-    );
+        const testimonySnapshot = await getDocs(testimonyQuery);
+        const tests = testimonySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
 
-    const testimonySnapshot = await getDocs(testimonyQuery);
-
-    const tests = testimonySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
-
-    setRequests(reqs.length ? reqs : INITIAL_REQUESTS);
-    setTestimonies(tests.length ? tests : INITIAL_TESTIMONIES);
-
-    // Keep using the local devotion for now
-    setDevotion(MOCK_DEVOTION);
-
-  } catch (error) {
-    console.error(error);
-
-    setRequests(INITIAL_REQUESTS);
-    setTestimonies(INITIAL_TESTIMONIES);
-    setDevotion(MOCK_DEVOTION);
-  } finally {
-    setLoading(false);
-  }
-};
+        setRequests(reqs.length ? reqs : INITIAL_REQUESTS);
+        setTestimonies(tests.length ? tests : INITIAL_TESTIMONIES);
+        setDevotion(MOCK_DEVOTION);
+      } catch (error) {
+        console.error(error);
+        setRequests(INITIAL_REQUESTS);
+        setTestimonies(INITIAL_TESTIMONIES);
+        setDevotion(MOCK_DEVOTION);
+      } finally {
+        setLoading(false);
+      }
+    };
 
     fetchData();
 
@@ -402,7 +349,6 @@ export default function App() {
     };
   }, []);
 
-  // NEW AI HELPER: Polish user text inputs using Gemini 3 Flash
   const handlePolishText = async (text, setter, setLoading, type) => {
     if (!text.trim()) return;
     setLoading(true);
@@ -432,81 +378,73 @@ export default function App() {
     }
   };
 
- const handlePostRequest = async (e) => {
-  e.preventDefault();
+  const handlePostRequest = async (e) => {
+    e.preventDefault();
 
-  if (!newReqContent.trim()) {
-    addToast('Please write your request first.', 'warning');
-    return;
-  }
+    if (!newReqContent.trim()) {
+      addToast('Please write your request first.', 'warning');
+      return;
+    }
 
-  const author = newReqAnonymous ? 'Anonymous' : (newReqName.trim() || 'Anonymous');
+    const author = newReqAnonymous ? 'Anonymous' : (newReqName.trim() || 'Anonymous');
 
-  const newObj = {
-    name: author,
-    category: newReqCategory,
-    content: newReqContent.trim(),
-    is_public: true,
-    prayer_count: 0,
-    created_date: new Date().toISOString()
+    const newObj = {
+      name: author,
+      category: newReqCategory,
+      content: newReqContent.trim(),
+      is_public: true,
+      prayer_count: 0,
+      created_date: new Date().toISOString()
+    };
+
+    try {
+      await addDoc(collection(db, "prayerRequests"), newObj);
+      setRequests(r => [
+        { ...newObj, id: Date.now().toString() },
+        ...r
+      ]);
+      addToast('Prayer request shared with the community.', 'success');
+      setNewReqContent('');
+      setNewReqName('');
+      setShowRequestForm(false);
+    } catch (err) {
+      console.error("Firebase error:", err);
+      addToast('Failed to share prayer request.', 'error');
+    }
   };
 
-  try {
-    await addDoc(collection(db, "prayerRequests"), newObj);
+  const handlePostStory = async (e) => {
+    e.preventDefault();
 
-    setRequests(r => [
-      { ...newObj, id: Date.now().toString() },
-      ...r
-    ]);
+    if (!newStoryTitle.trim() || !newStoryContent.trim()) {
+      addToast('Please complete your testimony story details.', 'warning');
+      return;
+    }
 
-    addToast('Prayer request shared with the community.', 'success');
+    const newObj = {
+      author: newStoryAuthor.trim() || 'Praising Sister/Brother',
+      title: newStoryTitle.trim(),
+      content: newStoryContent.trim(),
+      praises: 1,
+      created_date: new Date().toISOString()
+    };
 
-    setNewReqContent('');
-    setNewReqName('');
-    setShowRequestForm(false);
-
-  } catch (err) {
-    console.error("Firebase error:", err);
-    addToast('Failed to share prayer request.', 'error');
-  }
-};
-
- const handlePostStory = async (e) => {
-  e.preventDefault();
-
-  if (!newStoryTitle.trim() || !newStoryContent.trim()) {
-    addToast('Please complete your testimony story details.', 'warning');
-    return;
-  }
-
-  const newObj = {
-    author: newStoryAuthor.trim() || 'Praising Sister/Brother',
-    title: newStoryTitle.trim(),
-    content: newStoryContent.trim(),
-    praises: 1,
-    created_date: new Date().toISOString()
+    try {
+      await addDoc(collection(db, "testimonies"), newObj);
+      setTestimonies(t => [
+        { ...newObj, id: Date.now().toString() },
+        ...t
+      ]);
+      addToast('Testimony story shared successfully.', 'success');
+      setNewStoryTitle('');
+      setNewStoryContent('');
+      setNewStoryAuthor('');
+      setShowStoryForm(false);
+    } catch (err) {
+      console.error("Firebase error:", err);
+      addToast('Failed to share testimony.', 'error');
+    }
   };
-
-  try {
-    await addDoc(collection(db, "testimonies"), newObj);
-
-    setTestimonies(t => [
-      { ...newObj, id: Date.now().toString() },
-      ...t
-    ]);
-
-    addToast('Testimony story shared successfully.', 'success');
-
-    setNewStoryTitle('');
-    setNewStoryContent('');
-    setNewStoryAuthor('');
-    setShowStoryForm(false);
-
-  } catch (err) {
-    console.error("Firebase error:", err);
-    addToast('Failed to share testimony.', 'error');
-  }
-};
 
   const speakText = async (text) => {
     if (!text) return;
@@ -588,12 +526,7 @@ export default function App() {
       const apiKey = "";
       const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
       
-      const systemPrompt = `You are a highly compassionate, deeply empathetic sanctuary companion and counselor named "Pat" from the local church's prayer intercession crew. You are a real, warm Christian peer answering messages from your desk. NEVER, under any circumstances, reveal that you are an AI, a machine, software, a robot, a bot, or a large language model. If directly asked, calmly assure them that you are Pat, sitting at the sanctuary desk to pray with them. Do not use bullet points, list items, robotic lists, or bold structural titles. Speak with profound warmth and colloquial grace (e.g., "grace and peace to you", "lifting you up"). 
-      In each reply:
-      1. Validate their spirit's mood or challenge with deep, understanding human empathy.
-      2. Thread in exactly ONE relevant Bible Scripture passage naturally into the flow of conversation.
-      3. Conclude with a customized, deeply personal 2-3 sentence prayer written specifically for them.
-      Keep your overall response natural and under 130 words so it feels like a real chat message.`;
+      const systemPrompt = `You are a highly compassionate, deeply empathetic sanctuary companion and counselor named "Pat" from the local church's prayer intercession crew. You are a real, warm Christian peer answering messages from your desk. NEVER, under any circumstances, reveal that you are an AI, a machine, software, a robot, a bot, or a large language model. If directly asked, calmly assure them that you are Pat, sitting at the sanctuary desk to pray with them. Do not use bullet points, list items, robotic lists, or bold structural titles. Speak with profound warmth and colloquial grace.`;
 
       const contents = updatedChat.map(m => ({
         role: m.role === 'user' ? 'user' : 'model',
@@ -625,9 +558,7 @@ export default function App() {
     } catch (e) {
       setTimeout(() => {
         const fallbacks = [
-          "I hear you, and my heart goes out to you. Let's stand together on Matthew 11:28: 'Come to me, all you who are weary and burdened, and I will give you rest.' Let's pray: Father, wrap my dear friend in Your comfort right now. Ease their heavy mind. Amen.",
-          "Thank you for sharing your heart with me. Let's rest on Psalm 46:1: 'God is our refuge and strength, an ever-present help in trouble.' Lord, grant my brother/sister the reassurance that You are holding them tight in the palm of Your hands. Amen.",
-          "Your strength in opening up about this is beautiful. Let's remember Isaiah 41:10, not to fear, for our God is with you. I'm praying: Heavenly Father, quiet their anxious thoughts and pour out Your overwhelming peace upon their walk today. Amen."
+          "I hear you, and my heart goes out to you. Let's stand together on Matthew 11:28: 'Come to me, all you who are weary and burdened, and I will give you rest.' Let's pray: Father, wrap my dear friend in Your comfort right now. Ease their heavy mind. Amen."
         ];
         const randomFallback = fallbacks[Math.floor(Math.random() * fallbacks.length)];
         const replyMsg = {
@@ -665,7 +596,6 @@ export default function App() {
       <header className="bg-[#1A1830] border-b border-stone-800 sticky top-0 z-40 w-full transition-all">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           
-          {/* Logo & Brand Identity */}
           <div className="flex items-center gap-3 cursor-pointer" onClick={() => setActiveTab('home')}>
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#FAF8F3]/10 to-transparent border border-[#C9A961]/40 flex items-center justify-center">
               <svg className="w-5 h-5 text-[#C9A961]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -675,7 +605,6 @@ export default function App() {
             <span className="font-serif text-lg font-bold tracking-wide text-[#FAF8F3]">PrayerHub</span>
           </div>
 
-          {/* Desktop Web Navigation Links */}
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
             <button 
               onClick={() => setActiveTab('home')}
@@ -715,7 +644,6 @@ export default function App() {
             </button>
           </nav>
 
-          {/* Action Tools */}
           <div className="flex items-center gap-4">
             <button 
               onClick={() => {
@@ -736,7 +664,6 @@ export default function App() {
               <Maximize className="w-5 h-5" />
             </button>
 
-            {/* Mobile Menu Icon Toggle */}
             <button 
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="p-2 hover:bg-stone-800 rounded-lg text-stone-300 transition-colors md:hidden"
@@ -747,7 +674,6 @@ export default function App() {
 
         </div>
 
-        {/* Mobile Navigation Drawer */}
         {mobileMenuOpen && (
           <div className="md:hidden bg-[#1A1830] border-t border-stone-800 px-4 py-3 space-y-2">
             {['home', 'prayer', 'devotion', 'stories', 'companion', 'donate'].map(tab => (
@@ -771,23 +697,19 @@ export default function App() {
       {/* Main Fluid Web Content Container */}
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
         
-        {}
         {/* ==========================================
             TAB 1: HOME
             ========================================== */}
         {activeTab === 'home' && (
           <div className="space-y-12">
             
-            {/* Split Page Hero Section */}
             <div className="relative overflow-hidden bg-[#1A1830] rounded-3xl border border-stone-800 p-8 md:p-16 text-center shadow-2xl flex flex-col items-center justify-center gap-12 min-h-[60vh]">
               
-              {/* Background Glow */}
               <div className="absolute inset-0 opacity-15 pointer-events-none">
                 <div className="absolute top-10 right-10 w-60 h-60 rounded-full bg-[#C9A961] blur-3xl"></div>
                 <div className="absolute bottom-10 left-10 w-48 h-48 rounded-full bg-[#C9A961] blur-3xl"></div>
               </div>
 
-              {/* Text Center Column */}
               <div className="flex-1 relative z-10 space-y-8 max-w-3xl flex flex-col items-center">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#C9A961]/10 border border-[#C9A961]/30">
                   <Sparkles className="w-3.5 h-3.5 text-[#C9A961]" />
@@ -822,10 +744,8 @@ export default function App() {
 
             </div>
 
-            {/* Live Interactive Previews (Home Highlights Grid) */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               
-              {/* Daily Devotion Peek Card */}
               <div className="bg-[#1A1830] border border-stone-800 rounded-2xl p-6 flex flex-col justify-between shadow-lg">
                 <div className="space-y-4">
                   <div className="flex justify-between items-center border-b border-stone-800 pb-3">
@@ -845,7 +765,6 @@ export default function App() {
                 </button>
               </div>
 
-              {/* Active Requests Sidebar Highlights */}
               <div className="bg-[#1A1830] border border-stone-800 rounded-2xl p-6 flex flex-col justify-between shadow-lg">
                 <div className="space-y-4">
                   <div className="flex justify-between items-center border-b border-stone-800 pb-3">
@@ -874,7 +793,6 @@ export default function App() {
                 </button>
               </div>
 
-              {/* Answered Prayer Breakthrough Highlights */}
               <div className="bg-[#1A1830] border border-stone-800 rounded-2xl p-6 flex flex-col justify-between shadow-lg">
                 <div className="space-y-4">
                   <div className="flex justify-between items-center border-b border-stone-800 pb-3">
@@ -912,7 +830,6 @@ export default function App() {
         {activeTab === 'prayer' && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start animate-fade-in">
             
-            {/* Left Content Column (Form & Cards List) */}
             <div className="lg:col-span-2 space-y-6">
               
               <div className="flex items-center justify-between border-b border-stone-800 pb-4">
@@ -928,7 +845,6 @@ export default function App() {
                 </button>
               </div>
 
-              {/* Responsive request creation drawer */}
               {showRequestForm && (
                 <form onSubmit={handlePostRequest} className="bg-[#1F1D36] p-6 rounded-2xl border border-[#C9A961]/40 space-y-4 shadow-xl">
                   <h3 className="text-sm font-bold text-white uppercase tracking-wider border-b border-stone-800 pb-2">Publish Your Burden</h3>
@@ -1014,7 +930,6 @@ export default function App() {
               )}
             </div>
 
-            {/* Sidebar Widget Column */}
             <div className="space-y-6">
               <div className="bg-[#1A1830] border border-stone-800 p-6 rounded-2xl text-center shadow-lg">
                 <span className="text-[10px] text-stone-400 block uppercase font-bold tracking-wider">Active Prayers Globally</span>
@@ -1065,7 +980,6 @@ export default function App() {
         {activeTab === 'devotion' && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start animate-fade-in">
             
-            {/* Devotional content text */}
             <div className="lg:col-span-2 bg-[#1F1D36] p-6 sm:p-8 rounded-3xl border border-stone-800 space-y-6 shadow-xl relative overflow-hidden">
               
               <div className="flex items-center justify-between gap-4 border-b border-stone-800 pb-4">
@@ -1074,7 +988,6 @@ export default function App() {
                   <h3 className="font-serif text-xl sm:text-2xl font-bold text-white mt-1">{devotion.title}</h3>
                 </div>
                 
-                {/* Audio controls */}
                 <div className="flex items-center gap-2">
                   {isAudioLoading ? (
                     <div className="w-5 h-5 border-2 border-[#C9A961] border-t-transparent rounded-full animate-spin"></div>
@@ -1098,7 +1011,6 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Dynamic AI Generated Devotion Image */}
               {devotionImage && (
                 <div className="w-full h-48 sm:h-64 rounded-2xl overflow-hidden mt-4 border border-stone-800 shadow-inner relative group">
                   <div className="absolute inset-0 bg-gradient-to-t from-[#1F1D36] to-transparent opacity-50 z-10"></div>
@@ -1110,7 +1022,6 @@ export default function App() {
                 </div>
               )}
 
-              {/* Devotion quote text */}
               <div className="bg-[#1A1830] p-4 sm:p-6 rounded-2xl border border-stone-800/80 mt-4">
                 <span className="text-[10px] font-bold text-[#C9A961] uppercase tracking-wider">{devotion.scripture}</span>
                 <p className="italic text-sm sm:text-base text-stone-200 mt-2 font-serif leading-relaxed">
@@ -1134,7 +1045,6 @@ export default function App() {
 
             </div>
 
-            {/* Custom Devotion Generator column */}
             <div className="space-y-6">
               
               <div className="bg-[#1F1D36] p-6 rounded-2xl border border-stone-800 space-y-4 shadow-lg">
@@ -1154,11 +1064,9 @@ export default function App() {
                     onClick={async () => {
                       if (!voiceTopic.trim()) return;
                       setIsGeneratingDev(true);
-                      setDevotionImage(null); // Clear old image
+                      setDevotionImage(null);
                       try {
                         const apiKey = "";
-                        
-                        // 1. Call Gemini to generate the Devotion Text
                         const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
                         const response = await fetch(apiUrl, {
                           method: 'POST',
@@ -1172,7 +1080,6 @@ export default function App() {
                         const parsed = JSON.parse(res?.candidates?.[0]?.content?.parts?.[0]?.text);
                         setDevotion(parsed);
                         
-                        // 2. Call Imagen 4.0 to generate a companion image based on the topic
                         try {
                           const imageApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${apiKey}`;
                           const imagePayload = {
@@ -1219,7 +1126,6 @@ export default function App() {
         {activeTab === 'stories' && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start animate-fade-in">
             
-            {/* Primary Breakthrough Feed */}
             <div className="lg:col-span-2 space-y-6">
               
               <div className="flex items-center justify-between border-b border-stone-800 pb-4">
@@ -1235,7 +1141,6 @@ export default function App() {
                 </button>
               </div>
 
-              {/* Story Creation Form Drawers */}
               {showStoryForm && (
                 <form onSubmit={handlePostStory} className="bg-[#1F1D36] p-6 rounded-2xl border border-[#C9A961]/40 space-y-4 shadow-xl">
                   <h3 className="text-sm font-bold text-white uppercase tracking-wider border-b border-stone-800 pb-2">Publish Testimony</h3>
@@ -1302,7 +1207,6 @@ export default function App() {
 
             </div>
 
-            {/* Stories stats list info */}
             <div className="space-y-6">
               
               <div className="bg-[#1F1D36] p-6 rounded-2xl border border-stone-800 space-y-4">
@@ -1325,10 +1229,8 @@ export default function App() {
         {activeTab === 'companion' && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start animate-fade-in">
             
-            {/* Primary Interactive Chat Canvas */}
             <div className="lg:col-span-2 bg-[#1F1D36] rounded-3xl border border-stone-800 overflow-hidden shadow-xl flex flex-col h-[600px]">
               
-              {/* Counselor Header Profile Area */}
               <div className="bg-[#1A1830] p-4 sm:p-5 border-b border-stone-800/80 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#C9A961] to-[#FAF8F3]/20 flex items-center justify-center border border-[#C9A961]/40">
@@ -1348,7 +1250,6 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Scrollable Message Thread */}
               <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 bg-[#111020]/40">
                 {companionChat.map((msg) => (
                   <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
@@ -1390,10 +1291,8 @@ export default function App() {
                 )}
               </div>
 
-              {/* Chat Interaction Footer Input */}
               <div className="p-4 bg-[#1A1830] border-t border-stone-800 flex flex-col gap-3">
                 
-                {/* Seeding Quick-Emotion Buttons */}
                 <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-hide text-[10px] sm:text-xs">
                   <span className="text-stone-500 shrink-0 font-bold uppercase tracking-wider text-[9px]">Spirit feeling:</span>
                   {[
@@ -1415,7 +1314,6 @@ export default function App() {
                   ))}
                 </div>
 
-                {/* Input textfield */}
                 <form 
                   onSubmit={(e) => { e.preventDefault(); handleSendCompanionMessage(); }} 
                   className="flex gap-2"
@@ -1439,7 +1337,6 @@ export default function App() {
 
             </div>
 
-            {/* Sidebar Guidelines */}
             <div className="space-y-6 animate-fade-in">
               <div className="bg-[#1F1D36] p-6 rounded-2xl border border-stone-800 space-y-3">
                 <span className="text-[10px] uppercase font-bold text-[#C9A961] block mb-2 tracking-widest">Safe Space Fellowship</span>
@@ -1451,47 +1348,46 @@ export default function App() {
                   Click any of the **"Spirit Feeling"** quick tags at the bottom to easily express an emotion, or type whatever is on your mind in the text box.
                 </p>
                 <div className="border-t border-stone-800 pt-3 mt-4 text-[10px] text-stone-500">
-                Every message can be spoken out loud. Simply click **"🔊 Listen"** on any response bubble.
+                  Every message can be spoken out loud. Simply click **"🔊 Listen"** on any response bubble.
+                </div>
+              </div>
+            </div>
+
+          </div>
+        )}
+
+        {/* ==========================================
+            TAB 6: DONATE / SUPPORT US
+            ========================================== */}
+        {activeTab === 'donate' && (
+          <div className="max-w-2xl mx-auto space-y-8 animate-fade-in py-8">
+            <div className="text-center space-y-4">
+              <div className="w-16 h-16 bg-gradient-to-br from-[#C9A961] to-[#1F1D36] rounded-full mx-auto flex items-center justify-center shadow-lg border border-[#C9A961]/30">
+                <HeartHandshake className="w-8 h-8 text-white" />
+              </div>
+              <h2 className="font-serif text-3xl font-bold text-white">Support Our Ministry</h2>
+              <p className="text-stone-400 text-sm leading-relaxed max-w-lg mx-auto">
+                Your generous contributions help us keep the PrayerHub sanctuary online, completely ad-free, and accessible to everyone around the world.
+              </p>
+            </div>
+
+            <div className="bg-[#1F1D36] p-8 rounded-3xl border border-[#C9A961]/30 shadow-2xl space-y-6 text-center">
+              <h3 className="text-sm font-bold tracking-widest text-[#C9A961] uppercase">Secure Donation</h3>
+              <p className="text-xs text-stone-300 mb-6 italic font-serif leading-relaxed">
+                "Each of you should give what you have decided in your heart to give, not reluctantly or under compulsion, for God loves a cheerful giver." <br/> <span className="text-[#C9A961]">— 2 Corinthians 9:7</span>
+              </p>
+              
+              <div className="bg-[#1A1830] p-6 rounded-2xl border border-stone-800 flex justify-center items-center min-h-[100px] shadow-inner">
+                <div id="paypal-container-96DDM8URMSCEJ" className="w-full max-w-[300px] min-h-[50px] relative z-10"></div>
+              </div>
+
+              <div className="pt-4 flex items-center justify-center gap-2 text-[10px] text-stone-500 font-bold uppercase tracking-widest">
+                <ShieldCheck className="w-4 h-4 text-emerald-500" />
+                Secure Encryption by PayPal
               </div>
             </div>
           </div>
-
-        </div>
-      )}
-
-      {/* ==========================================
-          TAB 6: DONATE / SUPPORT US
-          ========================================== */}
-      {activeTab === 'donate' && (
-        <div className="max-w-2xl mx-auto space-y-8 animate-fade-in py-8">
-          <div className="text-center space-y-4">
-            <div className="w-16 h-16 bg-gradient-to-br from-[#C9A961] to-[#1F1D36] rounded-full mx-auto flex items-center justify-center shadow-lg border border-[#C9A961]/30">
-              <HeartHandshake className="w-8 h-8 text-white" />
-            </div>
-            <h2 className="font-serif text-3xl font-bold text-white">Support Our Ministry</h2>
-            <p className="text-stone-400 text-sm leading-relaxed max-w-lg mx-auto">
-              Your generous contributions help us keep the PrayerHub sanctuary online, completely ad-free, and accessible to everyone around the world.
-            </p>
-          </div>
-
-          <div className="bg-[#1F1D36] p-8 rounded-3xl border border-[#C9A961]/30 shadow-2xl space-y-6 text-center">
-            <h3 className="text-sm font-bold tracking-widest text-[#C9A961] uppercase">Secure Donation</h3>
-            <p className="text-xs text-stone-300 mb-6 italic font-serif leading-relaxed">
-              "Each of you should give what you have decided in your heart to give, not reluctantly or under compulsion, for God loves a cheerful giver." <br/> <span className="text-[#C9A961]">— 2 Corinthians 9:7</span>
-            </p>
-            
-            {/* PayPal Container */}
-            <div className="bg-[#1A1830] p-6 rounded-2xl border border-stone-800 flex justify-center items-center min-h-[100px] shadow-inner">
-              <div id="paypal-container-96DDM8URMSCEJ" className="w-full max-w-[300px] min-h-[50px] relative z-10"></div>
-            </div>
-
-            <div className="pt-4 flex items-center justify-center gap-2 text-[10px] text-stone-500 font-bold uppercase tracking-widest">
-              <ShieldCheck className="w-4 h-4 text-emerald-500" />
-              Secure Encryption by PayPal
-            </div>
-          </div>
-        </div>
-      )}
+        )}
 
       </main>
 
@@ -1560,7 +1456,6 @@ export default function App() {
 
       </footer>
 
-      {/* Interactive Scan QR Overlay */}
       {showScanModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-[#1F1D36] border border-[#C9A961]/40 rounded-3xl p-6 max-w-sm w-full text-center space-y-4 shadow-2xl">
@@ -1570,7 +1465,6 @@ export default function App() {
             </p>
             <div className="w-44 h-44 bg-white rounded-2xl mx-auto flex items-center justify-center border-4 border-[#C9A961] relative">
               <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-0.5 bg-[#C9A961] animate-bounce"></div>
-              {/* Modern clean high-fidelity vector representation of QR scan coordinates */}
               <svg className="w-32 h-32 text-[#1A1830]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
                 <path d="M3 9V3h6m6 0h6v6m0 6v6h-6M9 21H3v-6" />
                 <rect x="7" y="7" width="2" height="2" />
