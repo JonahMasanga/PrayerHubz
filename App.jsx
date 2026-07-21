@@ -6,6 +6,16 @@ import {
   Plus, Send, Eye, ShieldAlert, Book, Search, HeartHandshake, Maximize, CheckSquare, ChevronRight, Menu
 } from 'lucide-react';
 
+import { db } from "./firebase";
+import {
+  collection,
+  addDoc,
+  getDocs,
+  query,
+  orderBy,
+  limit
+} from "firebase/firestore";
+
 // Gemini TTS audio utility: Converts PCM data directly to dynamic WAV audio
 function base64ToArrayBuffer(base64) {
   const binaryString = window.atob(base64);
@@ -108,21 +118,21 @@ const INITIAL_TESTIMONIES = [
   }
 ];
 
-const base44SafeClient = {
-  entities: {
+//const base44SafeClient = {
+  //entities: {
     PrayerRequest: { 
-      filter: async () => INITIAL_REQUESTS,
-      create: async (data) => data
-    },
-    Testimony: { 
-      list: async () => INITIAL_TESTIMONIES,
-      create: async (data) => data
-    },
-    Devotion: { 
-      list: async () => [MOCK_DEVOTION] 
-    }
-  }
-};
+     // filter: async () => INITIAL_REQUESTS,
+     // create: async (data) => data
+  //  },
+    //Testimony: { 
+     // list: async () => INITIAL_TESTIMONIES,
+     // create: async (data) => data
+  //  },
+  //  Devotion: { 
+   //   list: async () => [MOCK_DEVOTION] 
+  //  }
+//  }
+//};
 
 function PrayerCard({ request, onPray }) {
   const [prayed, setPrayed] = useState(false);
