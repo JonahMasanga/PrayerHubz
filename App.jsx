@@ -722,7 +722,7 @@ export default function App() {
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#C9A961]/10 border border-[#C9A961]/30">
                   <Sparkles className="w-3.5 h-3.5 text-[#C9A961]" />
                   <span className="text-[10px] font-black tracking-widest uppercase text-[#C9A961]">
-                    PrayerHub  Sanctuary
+                    PrayerHub Sanctuary
                   </span>
                 </div>
 
