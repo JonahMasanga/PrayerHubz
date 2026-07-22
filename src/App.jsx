@@ -63,7 +63,7 @@ const MOCK_DEVOTION = {
   title: 'Resting in the Shelter of the Most High',
   scripture: 'Psalm 91:1-2',
   scripture_text: 'Whoever dwells in the shelter of the Most High will rest in the shadow of the Almighty. I will say of the Lord, "He is my refuge and my fortress, my God, in whom I trust."',
-  content: content: "In our fast-paced modern world, finding true rest can feel like chasing a mirage. We seek refuge in entertainment, distraction, or accomplishments, yet our souls remain weary. True sanctuary is not a physical place or a schedule clearance; it is a Person. When we make the decision to dwell in God's presence daily through intentional prayer, we find a quiet shelter that no storm can breach.",
+  content: "In our fast-paced modern world, finding true rest can feel like chasing a mirage. We seek refuge in entertainment, distraction, or accomplishments, yet our souls remain weary. True sanctuary is not a physical place or a schedule clearance; it is a Person. When we make the decision to dwell in God's presence daily through intentional prayer, we find a quiet shelter that no storm can breach.",
   reflection: 'What areas of stress or anxiety are you holding onto today? Take 2 minutes to surrender them explicitly to your Fortress.',
   author: 'Pastor David Vance',
   read_time: '3 min read'
