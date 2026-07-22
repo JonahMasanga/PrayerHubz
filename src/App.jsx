@@ -163,7 +163,6 @@ function PrayerCard({ request, onPray }) {
     </div>
   );
 }
-
 function StoryCard({ testimony, onAmen }) {
   const [amen, setAmen] = useState(false);
   const [amenCount, setAmenCount] = useState(testimony.praises || 0);
