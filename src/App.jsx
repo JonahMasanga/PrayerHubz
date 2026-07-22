@@ -179,7 +179,7 @@ function StoryCard({ testimony, onAmen }) {
   };
 
   return (
-    <div className="bg-gradient-to-br from-[#1F1D36] to-[#1A1830] p-5 rounded-2xl border border-stone-800 hover:border-[#C9A961]/30 transition-all duration-300 flex flex-col justify-between shadow-lg"[...]
+   <div className="bg-gradient-to-br from-[#1F1D36] to-[#1A1830] p-5 rounded-2xl border border-stone-800 hover:border-[#C9A961]/30 transition-all duration-300 flex flex-col justify-between shadow-lg">
       <div>
         <div className="flex items-center justify-between mb-3">
           <span className="text-[9px] tracking-widest font-bold uppercase text-[#C9A961] bg-[#C9A961]/10 px-2.5 py-0.5 rounded">
