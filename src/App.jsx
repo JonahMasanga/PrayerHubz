@@ -524,8 +524,7 @@ export default function App() {
       const apiKey = "";
       const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
       
-      const systemPrompt = `You are a highly compassionate, deeply empathetic sanctuary companion and counselor named "Pat" from the local church's prayer intercession crew. You are a real, warm Chris[...]
-
+      const systemPrompt = `You are Pat, a compassionate Christian prayer companion. Respond with empathy, encouragement, and biblical hope. Keep responses concise and supportive.`;
       const contents = updatedChat.map(m => ({
         role: m.role === 'user' ? 'user' : 'model',
         parts: [{ text: m.text }]
