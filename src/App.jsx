@@ -724,14 +724,14 @@ export default function App() {
                 <div className="flex flex-col sm:flex-row gap-4 pt-8 w-full justify-center">
                   <button 
                     onClick={() => setActiveTab('prayer')}
-                    className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-[#C9A961] hover:bg-[#B89850] text-[#1A1830] font-bold text-sm transition-all active:scale-95 shadow[...]
+                    className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-[#C9A961] hover:bg-[#B89850] text-[#1A1830] font-bold text-sm transition-all active:scale-95 shadow-lg"
                   >
                     <Heart className="w-4 h-4 fill-[#1A1830]" />
                     <span>Share a Prayer Request</span>
                   </button>
                   <button 
                     onClick={() => setActiveTab('companion')}
-                    className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl border border-stone-600 text-white hover:bg-stone-800 font-bold text-sm transition-all active:scale-95[...]
+                    className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl border border-stone-600 text-white hover:bg-stone-800 font-bold text-sm transition-all active:scale-95"
                   >
                     <Smile className="w-4 h-4 text-[#C9A961]" />
                     <span>Get Comfort Companion</span>
