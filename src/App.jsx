@@ -555,8 +555,7 @@ export default function App() {
     } catch (e) {
       setTimeout(() => {
         const fallbacks = [
-          "I hear you, and my heart goes out to you. Let's stand together on Matthew 11:28: 'Come to me, all you who are weary and burdened, and I will give you rest.' Let's pray: Father, wrap my dear[...]
-        ];
+          "I hear you, and my heart goes out to you. Let's stand together on Matthew 11:28: 'Come to me, all you who are weary and burdened, and I will give you rest.' Let's pray: Father, wrap my dear friend in Your peace, give them strength for today, and remind them that they are never alone. In Jesus' name, Amen."];
         const randomFallback = fallbacks[Math.floor(Math.random() * fallbacks.length)];
         const replyMsg = {
           id: `msg-${Date.now()}-comp`,
