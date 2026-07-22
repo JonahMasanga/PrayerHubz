@@ -355,9 +355,8 @@ export default function App() {
       const apiKey = "";
       const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
       const systemPrompt = type === 'prayer'
-        ? "You are a compassionate editor. Rewrite this prayer request to be clear, heartfelt, and reverent. Keep it under 4 sentences. Do not add any conversational filler, just return the polished t[...]
-        : "You are a joyous editor. Rewrite this testimony/praise report to be uplifting, clear, and glorifying to God. Keep it under 4 sentences. Do not add conversational filler.";
-
+          ? "You are a compassionate editor. Rewrite this prayer request to be clear, heartfelt, and reverent. Keep it under 4 sentences. Do not add any conversational filler, just return the polished text."
+          : "You are a joyous editor. Rewrite this testimony/praise report to be uplifting, clear, and glorifying to God. Keep it under 4 sentences. Do not add conversational filler.";
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
