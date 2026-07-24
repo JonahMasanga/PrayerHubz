@@ -18,7 +18,7 @@ const missingEnvKeys = requiredEnvKeys.filter((key) => {
 if (missingEnvKeys.length > 0) {
   const errorMessage = `[Firebase config] Missing required Vite environment variables: ${missingEnvKeys.join(
     ", "
-  )}. Add them to your .env.local file for local development or your Vercel project environment variables, then rebuild/redeploy.`;
+  )}. Add them to a local .env file (for example, .env.local) or your Vercel project environment variables, then rebuild/redeploy.`;
   console.error(errorMessage);
   throw new Error(errorMessage);
 }
