@@ -3,7 +3,7 @@ import {
   Heart, Gift, Bell, ArrowRight, Share2, Star, Sparkles, CheckCircle, 
   X, HelpCircle, Compass, Smile, Flame, Users, Info, MessageSquare, ShieldCheck,
   Volume2, VolumeX, Play, Pause, RefreshCw, Globe, BookOpen, ExternalLink, Headphones,
-  Plus, Send, Eye, ShieldAlert, Book, Search, HeartHandshake, Maximize, CheckSquare, ChevronRight, Menu
+  Plus, Send, Eye, ShieldAlert, Book, Search, HeartHandshake, Maximize, CheckSquare, ChevronRight, Menu, Building2
 } from 'lucide-react';
 
 import { db } from "./firebase";
